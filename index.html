@@ -1,13 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta http-equiv="refresh" content="0;url=beamhub://hello">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirecting...</title>
   <script>
-    // fallback if the app isn't installed
-    setTimeout(() => {
-      window.location.href = "https://beamhub.inovext.co.uk/";
-    }, 100);
+    function isWebView() {
+      const ua = navigator.userAgent || navigator.vendor || window.opera;
+
+      // Detect Android WebView
+      const androidWebView = /\bwv\b/.test(ua) || /Android.*Version\/[\d.]+.*Chrome\/[.0-9]* Mobile/.test(ua) && !/Chrome\/[.0-9]* (Mobile )?Safari/.test(ua);
+
+      // Detect iOS WebView
+      const iosWebView = (/(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i).test(ua);
+
+      return androidWebView || iosWebView;
+    }
+
+    window.onload = () => {
+      if (isWebView()) {
+        // Open your app
+        window.location.href = "beamhub://hello";
+      } else {
+        // Close the page or blank out
+        window.open('', '_self');
+        window.close();
+
+        // Fallback for browsers that block window.close()
+        setTimeout(() => {
+          document.body.innerHTML = '<h2 style="text-align:center;margin-top:30vh;">This page can only be opened inside the app.</h2>';
+        }, 300);
+      }
+    };
   </script>
 </head>
-<body></body>
+<body>
+</body>
 </html>
