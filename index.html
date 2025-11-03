@@ -3,47 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Opening App...</title>
+  <title>Opening BeamHub...</title>
   <script>
-    function isMobile() {
-      return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    }
-
-    function isWebView() {
-      const ua = navigator.userAgent || navigator.vendor || window.opera;
-      const androidWebView = /\bwv\b/.test(ua);
-      const iosWebView = (/(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i).test(ua);
-      return androidWebView || iosWebView;
-    }
-
     window.onload = () => {
+      const ua = navigator.userAgent || "";
+      const isAndroid = /Android/i.test(ua);
+      const isiOS = /iPhone|iPad|iPod/i.test(ua);
+      const isWebView = /\bwv\b/.test(ua) || (isiOS && /AppleWebKit(?!.*Safari)/i.test(ua));
+
       const deepLink = "beamhub://hello";
-      const fallbackURL = "https://play.google.com/store/apps/details?id=com.beamhub"; // <-- CHANGE THIS
+      const playStore = "https://play.google.com/store/apps/details?id=com.beamhub"; // update ID
+      const appStore = "https://apps.apple.com/app/id000000000"; // update ID
 
-      const ua = navigator.userAgent;
+      // 🖥️ Desktop → close the tab cleanly
+      if (!isAndroid && !isiOS) {
+        window.open("", "_self");
+        window.close();
+        return;
+      }
 
-      // ✅ Do nothing at all on desktop
-      if (!/Android|iPhone|iPad|iPod/i.test(ua)) return;
-
-      if (isWebView()) {
-        // ✅ Works inside your app's WebView
+      // 📱 Inside in-app WebView
+      if (isWebView) {
         window.location.href = deepLink;
         return;
       }
 
-      if (/Android/i.test(ua)) {
-        // ✅ On Android Chrome: try opening app, else open Play Store
-        const timeout = setTimeout(() => {
-          window.location.href = fallbackURL;
-        }, 1200);
-        window.location.href = deepLink;
+      // 🤖 Android Chrome: use intent:// to force launch app
+      if (isAndroid) {
+        const intentUrl = "intent://hello#Intent;scheme=beamhub;package=com.beamhub;S.browser_fallback_url=" + encodeURIComponent(playStore) + ";end";
+        window.location.href = intentUrl;
+        return;
+      }
 
-        // if the app opens, Chrome loses focus → clear the timeout
-        window.addEventListener("pagehide", () => clearTimeout(timeout));
-      } else if (/iPhone|iPad|iPod/i.test(ua)) {
-        // ✅ On iOS Safari
+      // 🍎 iOS Safari
+      if (isiOS) {
         const timeout = setTimeout(() => {
-          window.location.href = "https://apps.apple.com/app/id000000000"; // <-- CHANGE THIS
+          window.location.href = appStore;
         }, 1200);
         window.location.href = deepLink;
         window.addEventListener("pagehide", () => clearTimeout(timeout));
