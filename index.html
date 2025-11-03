@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Opening App...</title>
   <script>
     function isMobile() {
@@ -18,25 +18,35 @@
 
     window.onload = () => {
       const deepLink = "beamhub://hello";
-      const fallbackURL = "https://beamhub.inovext.co.uk/"; // change this to your store link or site
+      const fallbackURL = "https://play.google.com/store/apps/details?id=com.beamhub"; // <-- CHANGE THIS
 
-      if (isMobile()) {
-        // Try opening app
+      const ua = navigator.userAgent;
+
+      // ✅ Do nothing at all on desktop
+      if (!/Android|iPhone|iPad|iPod/i.test(ua)) return;
+
+      if (isWebView()) {
+        // ✅ Works inside your app's WebView
         window.location.href = deepLink;
+        return;
+      }
 
-        // If app not installed, fallback after a short delay
-        setTimeout(() => {
+      if (/Android/i.test(ua)) {
+        // ✅ On Android Chrome: try opening app, else open Play Store
+        const timeout = setTimeout(() => {
           window.location.href = fallbackURL;
         }, 1200);
-      } else if (isWebView()) {
-        // Open app directly inside webview
         window.location.href = deepLink;
-      } else {
-        // Desktop or unsupported
-        document.body.innerHTML = `
-          <h2 style="text-align:center;margin-top:30vh;">
-            Please open this link from your mobile device.
-          </h2>`;
+
+        // if the app opens, Chrome loses focus → clear the timeout
+        window.addEventListener("pagehide", () => clearTimeout(timeout));
+      } else if (/iPhone|iPad|iPod/i.test(ua)) {
+        // ✅ On iOS Safari
+        const timeout = setTimeout(() => {
+          window.location.href = "https://apps.apple.com/app/id000000000"; // <-- CHANGE THIS
+        }, 1200);
+        window.location.href = deepLink;
+        window.addEventListener("pagehide", () => clearTimeout(timeout));
       }
     };
   </script>
