@@ -3,37 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Redirecting...</title>
+  <title>Opening App...</title>
   <script>
+    function isMobile() {
+      return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    }
+
     function isWebView() {
       const ua = navigator.userAgent || navigator.vendor || window.opera;
-
-      // Detect Android WebView
-      const androidWebView = /\bwv\b/.test(ua) || /Android.*Version\/[\d.]+.*Chrome\/[.0-9]* Mobile/.test(ua) && !/Chrome\/[.0-9]* (Mobile )?Safari/.test(ua);
-
-      // Detect iOS WebView
+      const androidWebView = /\bwv\b/.test(ua);
       const iosWebView = (/(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i).test(ua);
-
       return androidWebView || iosWebView;
     }
 
     window.onload = () => {
-      if (isWebView()) {
-        // Open your app
-        window.location.href = "beamhub://hello";
-      } else {
-        // Close the page or blank out
-        window.open('', '_self');
-        window.close();
+      const deepLink = "beamhub://hello";
+      const fallbackURL = "https://yourfallbackwebsite.com"; // change this to your store link or site
 
-        // Fallback for browsers that block window.close()
+      if (isMobile()) {
+        // Try opening app
+        window.location.href = deepLink;
+
+        // If app not installed, fallback after a short delay
         setTimeout(() => {
-          document.body.innerHTML = '<h2 style="text-align:center;margin-top:30vh;">This page can only be opened inside the app.</h2>';
-        }, 300);
+          window.location.href = fallbackURL;
+        }, 1200);
+      } else if (isWebView()) {
+        // Open app directly inside webview
+        window.location.href = deepLink;
+      } else {
+        // Desktop or unsupported
+        document.body.innerHTML = `
+          <h2 style="text-align:center;margin-top:30vh;">
+            Please open this link from your mobile device.
+          </h2>`;
       }
     };
   </script>
 </head>
-<body>
-</body>
+<body></body>
 </html>
