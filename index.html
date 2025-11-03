@@ -1,50 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Opening BeamHub...</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Opening Beamhub...</title>
   <script>
     window.onload = () => {
-      const ua = navigator.userAgent || "";
-      const isAndroid = /Android/i.test(ua);
-      const isiOS = /iPhone|iPad|iPod/i.test(ua);
-      const isWebView = /\bwv\b/.test(ua) || (isiOS && /AppleWebKit(?!.*Safari)/i.test(ua));
-
       const deepLink = "beamhub://hello";
-      const playStore = "https://play.google.com/store/apps/details?id=com.beamhub"; // update ID
-      const appStore = "https://apps.apple.com/app/id000000000"; // update ID
+      const apkUrl = "https://yourdomain.com/app/beamhub-latest.apk"; // change to your actual APK link
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
 
-      // 🖥️ Desktop → close the tab cleanly
-      if (!isAndroid && !isiOS) {
-        window.open("", "_self");
-        window.close();
-        return;
-      }
+      const isAndroid = /Android/i.test(userAgent);
+      const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
+      const isWebView = /\bwv\b/.test(userAgent) || /(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i.test(userAgent);
 
-      // 📱 Inside in-app WebView
       if (isWebView) {
+        // Inside the app’s own WebView
         window.location.href = deepLink;
         return;
       }
 
-      // 🤖 Android Chrome: use intent:// to force launch app
       if (isAndroid) {
-        const intentUrl = "intent://hello#Intent;scheme=beamhub;package=com.beamhub;S.browser_fallback_url=" + encodeURIComponent(playStore) + ";end";
+        // Use Android intent for better reliability
+        const intentUrl = `intent://hello#Intent;scheme=beamhub;package=com.beamhub.app;S.browser_fallback_url=${encodeURIComponent(apkUrl)};end`;
         window.location.href = intentUrl;
+
+        // Backup fallback if intent fails silently
+        setTimeout(() => {
+          window.location.href = apkUrl;
+        }, 1500);
         return;
       }
 
-      // 🍎 iOS Safari
-      if (isiOS) {
-        const timeout = setTimeout(() => {
-          window.location.href = appStore;
-        }, 1200);
+      if (isIOS) {
+        // For iOS just try the deep link
         window.location.href = deepLink;
-        window.addEventListener("pagehide", () => clearTimeout(timeout));
+        // Optional: fallback to an info page or placeholder
+        setTimeout(() => {
+          document.body.innerHTML = `
+            <h2 style="text-align:center;margin-top:30vh;">Beamhub app not installed.</h2>
+            <p style="text-align:center;">Please install it manually.</p>`;
+        }, 1200);
+        return;
       }
+
+      // Desktop or unknown
+      document.body.innerHTML = `
+        <h2 style="text-align:center;margin-top:30vh;">This link is for mobile only.</h2>`;
     };
   </script>
 </head>
-<body></body>
+<body>
+</body>
 </html>
